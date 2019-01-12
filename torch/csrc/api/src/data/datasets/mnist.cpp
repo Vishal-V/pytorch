@@ -51,11 +51,11 @@ uint32_t expect_int32(std::ifstream& stream, uint32_t expected) {
   return value;
 }
 
-std::string join_paths(std::string head, std::string tail) {
+std::string join_paths(std::string head, const std::string& tail) {
   if (head.back() != '/') {
     head.push_back('/');
   }
-  head += std::move(tail);
+  head += tail;
   return head;
 }
 
@@ -110,6 +110,14 @@ optional<size_t> MNIST::size() const {
 
 bool MNIST::is_train() const noexcept {
   return images_.size(0) == kTrainSize;
+}
+
+const Tensor& MNIST::images() const {
+  return images_;
+}
+
+const Tensor& MNIST::targets() const {
+  return targets_;
 }
 
 } // namespace datasets

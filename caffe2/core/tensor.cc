@@ -119,7 +119,7 @@ void TensorVectorResize(
 
 Tensor empty(at::IntList dims, at::TensorOptions options) {
   // TODO: merge this with at::empty after Tensor is merged
-  auto tensor = Tensor(dims, options.device().type());
+  auto tensor = Tensor(dims, options.device());
   tensor.raw_mutable_data(options.dtype());
   return tensor;
 }
@@ -153,6 +153,26 @@ void ReinitializeTensor(
   VLOG(1) << "Create new mutable object " << TypeMeta::TypeName<Tensor>()
           << " dims: " << dims;
   *tensor = caffe2::empty(dims, options);
+}
+
+void ReinitializeAndCopyFrom(
+    Tensor* t,
+    at::TensorOptions options,
+    const Tensor& src,
+    bool async) {
+  auto device_type = options.device().type();
+  CAFFE_ENFORCE(t != nullptr, "Target tensor ptr is null.");
+  if (!*t || device_type != t->GetDeviceType()) {
+    *t = Tensor(device_type);
+  }
+  CAFFE_ENFORCE(
+      !t->dtype_initialized() || t->dtype() == src.dtype(),
+      "We don't allow a change of data type in ReinitializeAndCopyFrom. Attempt to "
+      " change from: ",
+      t->dtype(),
+      " to: ",
+      src.dtype());
+  t->CopyFrom(src, async);
 }
 
 namespace {

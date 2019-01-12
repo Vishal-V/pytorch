@@ -776,7 +776,7 @@ class AppendOp final : public Operator<Context> {
       CAFFE_ENFORCE(a.sizes()[i] == b.sizes()[i]);
     }
     auto oldSize = c->numel();
-    c->Extend(b.sizes()[0], kDatasetGrowthPct, &context_);
+    c->Extend(b.sizes()[0], kDatasetGrowthPct);
     auto* dst = (char*)c->raw_mutable_data() + oldSize * b.dtype().itemsize();
     context_.CopyItemsSameDevice(b.dtype(), b.numel(), b.raw_data(), dst);
     return true;
@@ -826,7 +826,7 @@ class AtomicAppendOp final : public Operator<Context> {
         continue;
       }
       auto oldSize = c->numel();
-      c->Extend(b.sizes()[0], kDatasetGrowthPct, &context_);
+      c->Extend(b.sizes()[0], kDatasetGrowthPct);
       auto* dst = (char*)c->raw_mutable_data() + oldSize * b.dtype().itemsize();
       context_.CopyItemsSameDevice(b.dtype(), b.numel(), b.raw_data(), dst);
     }
@@ -960,8 +960,11 @@ class CollectTensorOp final : public Operator<Context> {
         CAFFE_ENFORCE(numVisited_ >= numToCollect_);
       } else if (pos >= tensorVector->size()) {
         // append
-        tensorVector->emplace_back(Context::GetDeviceType());
-        tensorVector->back().CopyFrom(tensor); // sync copy
+        tensorVector->emplace_back();
+        ReinitializeAndCopyFrom(
+            &tensorVector->back(),
+            Context::GetDeviceType(),
+            tensor); // sync copy
       } else {
         // replace
         tensorVector->at(pos).CopyFrom(tensor); // sync copy
