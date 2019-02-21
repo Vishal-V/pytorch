@@ -1,4 +1,4 @@
-## @package onnx
+# @package onnx
 # Module caffe2.python.onnx.tests.onnx_backend_test
 
 from __future__ import absolute_import
@@ -79,6 +79,7 @@ if 'JENKINS_URL' in os.environ:
 if workspace.has_hip_support:
     # TODO: Investigate flakiness in ROCM Softmax (it sometimes give NaN).
     backend_test.exclude(r'test_softmax_.*_cuda')
+    backend_test.exclude(r'test_logsoftmax_.*_cuda')
 
 # import all test cases at global scope to make them visible to python.unittest
 globals().update(backend_test
